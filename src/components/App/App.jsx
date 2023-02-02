@@ -5,14 +5,11 @@ import ContactList from '../ContactList';
 import Filter from '../Filter';
 import { ContactsTitle, Container } from './App.styled';
 
+const LS_KEY = 'contacts';
+
 export class App extends Component {
   state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
+    contacts: [],
     filter: '',
   };
 
@@ -62,6 +59,19 @@ export class App extends Component {
     }));
   };
 
+  componentDidMount() {
+    const contacts = localStorage.getItem(LS_KEY);
+    const parsedContacts = JSON.parse(contacts);
+    if (!parsedContacts) {
+      return;
+    }
+    this.setState({ contacts: parsedContacts });
+  }
+
+  componentDidUpdate() {
+    localStorage.setItem(LS_KEY, JSON.stringify(this.state.contacts));
+  }
+
   render() {
     const normalizedFilter = this.state.filter.toLocaleLowerCase();
     const visibleContats = this.getVisibleContacts(normalizedFilter);
@@ -76,10 +86,12 @@ export class App extends Component {
 
         <Filter value={this.state.filter} onInputChange={this.changeFilter} />
 
-        <ContactList
-          contacts={visibleContats}
-          onDeleteContact={this.deleteContact}
-        />
+        {this.state.contacts.length > 0 && (
+          <ContactList
+            contacts={visibleContats}
+            onDeleteContact={this.deleteContact}
+          />
+        )}
       </Container>
     );
   }
